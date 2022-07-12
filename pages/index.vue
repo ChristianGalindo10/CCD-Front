@@ -13,6 +13,7 @@
   name: 'IndexPage'
 }**/
 export default {
+  //#layout: 'defecto',
   async asyncData({ app }) {
     const ip = await app.$axios.$get('http://localhost:8080');
     return { ip }
