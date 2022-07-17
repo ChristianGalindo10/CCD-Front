@@ -19,8 +19,13 @@
                 <b-form-input id="input-4" v-model="form.celular" placeholder="Enter celular" required></b-form-input>
             </b-form-group>
 
-             <b-form-group id="input-group-5" label="Password:" label-for="input-5">
-                <b-form-input id="input-5" v-model="form.password" placeholder="Enter password" required></b-form-input>
+            <b-form-group id="input-group-5" label="Password:" label-for="input-5">
+                <b-form-input type="password" id="input-5" aria-describedby="password-help-block" v-model="form.password" required></b-form-input>
+                <b-form-text id="password-help-block">
+                    Your password must be 8-20 characters long, contain letters and numbers, and must not
+                    contain spaces, special characters, or emoji.
+                </b-form-text>
+                <!--<b-form-input id="input-5" v-model="form.password" placeholder="Enter password" required></b-form-input>-->
             </b-form-group>
 
             <b-form-group id="input-group-6" v-slot="{ ariaDescribedby }">
@@ -61,7 +66,7 @@ export default {
         onSubmit(event) {
             event.preventDefault()
             alert(JSON.stringify(this.form))
-            const user = new Usuario(this.form.name,this.form.celular,this.form.type,this.form.password);
+            const user = new Usuario(this.form.name, this.form.celular, this.form.type, this.form.password);
             this.$axios.$post("http://localhost:8080/usuarios/add", user)
                 .then(response => console.log(response))
                 .catch(error => {
