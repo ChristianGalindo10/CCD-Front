@@ -15,7 +15,8 @@
 export default {
   //#layout: 'defecto',
   async asyncData({ app }) {
-    const ip = await app.$axios.$get('http://localhost:8080');
+    const ip = await app.$axios.$get('http://localhost:8080/usuarios/get');
+    console.log(ip);
     return { ip }
   }
 }

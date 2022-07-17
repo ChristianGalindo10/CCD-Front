@@ -1,7 +1,10 @@
 <template>
     <div>
         <b-navbar toggleable="lg" type="dark" variant="info">
-            <b-navbar-brand href="#">NavBar</b-navbar-brand>
+            
+            <b-navbar-brand ><NuxtLink  to="/" class="navbar-brand">
+                            Home
+                        </NuxtLink></b-navbar-brand>
 
             <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
@@ -15,7 +18,10 @@
                 <b-navbar-nav class="ml-auto">
                     <b-nav-form>
                         <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
-                        <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
+                        <!-- <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button> -->
+                        <NuxtLink class="btn my-2 my-sm-0 btn-secondary btn-sm" to="/sign_in">
+                            Sign In
+                        </NuxtLink>
                     </b-nav-form>
 
                     <b-nav-item-dropdown text="Lang" right>
@@ -41,6 +47,6 @@
 
 <script>
 export default {
-  name: 'Header'
+    name: 'Header'
 }
 </script>
