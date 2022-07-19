@@ -66,7 +66,7 @@ export default {
         onSubmit(event) {
             event.preventDefault()
             alert(JSON.stringify(this.form))
-            const user = new Usuario(this.form.name, this.form.celular, this.form.type, this.form.password);
+            const user = new Usuario(this.form.name, this.form.celular, this.form.type, this.form.password, this.form.email);
             this.$axios.$post("http://localhost:8080/usuarios/add", user)
                 .then(response => console.log(response))
                 .catch(error => {

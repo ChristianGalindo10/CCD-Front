@@ -22,6 +22,9 @@
                         <NuxtLink class="btn my-2 my-sm-0 btn-secondary btn-sm" to="/sign_in">
                             Sign In
                         </NuxtLink>
+                        <NuxtLink class="btn my-2 my-sm-0 btn-secondary btn-sm" to="/Log_in">
+                            Log In
+                        </NuxtLink>
                     </b-nav-form>
 
                     <b-nav-item-dropdown text="Lang" right>
