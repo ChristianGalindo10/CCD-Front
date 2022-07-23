@@ -1,3 +1,13 @@
 .nuxt-link-exact-active {
-    color: red;
-  }
+  color: red;
+}
+
+#datosCuenta {
+  border-width: 2px !important;
+  border-style: groove !important;
+  border-color: rgb(192, 192, 192) !important;
+  border-image: initial !important;
+  width: 85%;
+  margin-left: auto;
+  margin-right: auto;
+}
