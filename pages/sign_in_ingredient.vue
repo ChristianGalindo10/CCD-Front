@@ -1,0 +1,82 @@
+<template>
+  <div>
+    <b-form @submit="onSubmit" @reset="onReset" v-if="show">
+
+      <b-form-group id="input-group-1" label="Nombre:" label-for="input-1">
+        <b-form-input id="input-1" v-model="form.nombre" placeholder="Enter Name" required>
+        </b-form-input>
+      </b-form-group>
+
+      <b-form-group id="input-group-2" label="Unidades:" label-for="input-2">
+        <b-form-input id="input-2" v-model="form.unidades" placeholder="Enter unities" @keypress="onlyNumber" required></b-form-input>
+      </b-form-group>
+
+      <b-form-group id="input-group-3" label="Unidad_medida:" label-for="input-3">
+        <b-form-input id="input-3" v-model="form.unidadMedida" placeholder="Enter unit of measurement" required></b-form-input>    
+      </b-form-group>
+
+      <b-button type="submit" variant="primary">Submit</b-button>
+      <b-button type="reset" variant="danger">Reset</b-button>
+    </b-form>
+    <b-card class="mt-3" header="Form Data Result">
+      <pre class="m-0">{{ form }}</pre>
+    </b-card>
+  </div>
+</template>
+<script>
+import Ingrediente from '../model/Ingrediente';
+
+export default {
+  data() {
+    return {
+      form: {
+        nombre: '',
+        unidades: '',
+        unidad_medida: '',
+        checked: []
+      },
+      show: true
+    }
+  },
+  methods: {
+    onSubmit(event) {
+      event.preventDefault()
+      alert(JSON.stringify(this.form))
+      console.log(this.form.unidadMedida);
+      const ingrediente = new Ingrediente(this.form.unidades, this.form.unidadMedida, this.form.nombre);
+      console.log(ingrediente)
+      this.$axios.$post("http://localhost:8080/ingredientes/add", ingrediente)
+        .then(response => console.log(response))
+        .catch(error => {
+          this.errorMessage = error.message;
+          console.error("There was an error!", error);
+        });
+    },
+    onReset(event) {
+      event.preventDefault()
+      // Reset our form values
+      this.form.nombre = ''
+      this.form.unidades = ''
+      this.form.unidad_medida = ''
+      this.form.checked = []
+      // Trick to reset/clear native browser form validation state
+      this.show = false
+      this.$nextTick(() => {
+        this.show = true
+      })
+    },
+    onlyNumber($event) {
+      //console.log($event.keyCode); //keyCodes value
+      let keyCode = ($event.keyCode ? $event.keyCode : $event.which);
+      if ((keyCode < 48 || keyCode > 57) && keyCode !== 46) { // 46 is dot
+        $event.preventDefault();
+      }
+    }
+  },
+ /* computed: {
+    validation() {
+      //return this.form.unidadMedida.length >= 1 && this.form.unidadMedida.length <=5
+    }
+  }*/
+}
+</script>
