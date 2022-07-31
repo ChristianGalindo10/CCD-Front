@@ -51,10 +51,10 @@ export default {
     if (localStorage.getItem('token')!=null) {
       this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
     }
-    if(localStorage.getItem('authorities')=='Usuario'){
+    /*if(localStorage.getItem('authorities')=='Usuario'){
       alert("Debe iniciar sesión!");
       this.$router.push('/log_in')
-    }
+    }*/
     const ip = this.$axios.$get('http://localhost:8080/usuarios/get');
     console.log(ip);
     return { ip }

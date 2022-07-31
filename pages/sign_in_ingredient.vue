@@ -27,6 +27,17 @@
 import Ingrediente from '../model/Ingrediente';
 
 export default {
+  mounted() {
+    if (localStorage.getItem('token')!=null) {
+      this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+    }else{
+      this.$router.push('/log_in')
+    }
+    if(localStorage.getItem('authorities')!='restaurante'){
+      alert("Debe iniciar sesión como restaurante!");
+      this.$router.push('/log_in')
+    }
+  },
   data() {
     return {
       form: {

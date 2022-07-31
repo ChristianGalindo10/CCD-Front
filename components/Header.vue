@@ -42,9 +42,14 @@
                         <!-- <NuxtLink class="btn my-2 my-sm-0 btn-secondary btn-sm" to="/sign_in">
                             Sign In
                         </NuxtLink> -->
-                        <NuxtLink class="nav-link" to="/Log_in">
+                        <NuxtLink v-if="!logIn" class="nav-link" to="/Log_in">
                             Ingresar
                         </NuxtLink>
+                        <NuxtLink v-if="logIn" class="nav-link" to="/User">
+                            {{name}}
+                        </NuxtLink>
+                        <a href="#" v-if="logIn" class="nav-link" @click="removeToken">Cerrar Sesión</a>
+                        <!-- <button >Cerrar Sesión</button> -->
                     </b-nav-form>
 
                     <!-- <b-nav-item-dropdown text="Lang" right>
@@ -70,6 +75,29 @@
 
 <script>
 export default {
-    name: 'Header'
+    name: 'Header',
+    mounted() {
+        if (localStorage.getItem('token') != null) {
+            this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+            this.name = localStorage.getItem('userName')
+            
+            this.logIn = true
+            console.log(this.logIn)
+        }
+    },
+    data() {
+        return {
+            logIn: false,
+            name: ''
+        }
+    },
+    methods:{
+        removeToken(){
+            localStorage.clear()
+            this.logIn = false
+            this.$router.push('/')
+            
+        }
+    }
 }
 </script>
