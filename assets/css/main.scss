@@ -1,6 +1,62 @@
+@import './carousel.scss';
+
 .nuxt-link-exact-active {
-  color: red;
+  color: #d1e70c !important;
+  text-decoration: underline #d1e70c;
 }
+
+.navbar-nav {
+  a {
+    position: relative;
+  }
+
+  a::before {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 4px;
+    border-radius: 4px;
+    background-color: #d1e70c;
+    bottom: 0;
+    left: 20%;
+    transform-origin: right;
+    transform: scaleX(0);
+    transition: transform .3s ease-in-out;
+  }
+
+  a:hover::before {
+    transform-origin: left;
+    transform: scaleX(1);
+  }
+
+  .nav-link {
+    color: rgb(255 255 255);
+  }
+}
+
+#indexJumbotron {
+  #header_img {
+    background-image: url('../img/header.webp');
+    background-size: cover;
+  }
+
+  .col-5{
+    display: flex;
+    align-items: center;
+  }
+
+  @media (min-width: 576px){
+    padding: 0 0 0 2rem;
+    height: 500px;
+    .row{
+      height: 100%;
+      max-width: 100%;
+      margin: 0;
+    }
+  }
+}
+
+
 
 #datosCuenta {
   border-width: 2px !important;

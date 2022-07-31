@@ -74,9 +74,9 @@ export default {
       event.preventDefault()
       alert(JSON.stringify(this.form))
       const restaurante = new Restaurante(this.form.nit, this.form.name, this.form.telefono, this.form.especialidad, this.form.email,this.form.password);
-      this.$axios.$post("http://localhost:8080/restaurantes/add", restaurante)
+      this.$axios.$post("http://localhost:8080/auth/newrestaurant", restaurante)
         .then(response => console.log(response))
-        .catch(error => {
+        .catch(response => console.log(response),error => {
           this.errorMessage = error.message;
           console.error("There was an error!", error);
         });

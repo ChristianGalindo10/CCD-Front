@@ -38,10 +38,25 @@ export default {
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     '@nuxtjs/axios',
-    'bootstrap-vue/nuxt'
+    'bootstrap-vue/nuxt',
+    'nuxt-universal-storage'
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-  }
+  },
+
+  axios: {
+    Headers:{
+      common: {
+        'Accept': 'application/json, text/plain, */*'
+      },
+      delete: {},
+      get: {},
+      head: {},
+      post: {},
+      put: {},
+      patch: {}
+    }
+  },
 }

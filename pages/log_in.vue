@@ -3,22 +3,9 @@
     <h1 class="title">Login in the page</h1>
     <form action class="form" @submit.prevent="login">
       <label class="form-label" for="#email">Email:</label>
-      <input
-        v-model="email"
-        class="form-input"
-        type="email"
-        id="email"
-        required
-        placeholder="Email"
-      >
+      <input v-model="email" class="form-input" type="email" id="email" required placeholder="Email">
       <label class="form-label" for="#password">Password:</label>
-      <input
-        v-model="password"
-        class="form-input"
-        type="password"
-        id="password"
-        placeholder="Password"
-      >
+      <input v-model="password" class="form-input" type="password" id="password" placeholder="Password">
       <p v-if="error" class="error">Has introducido mal el email o la contraseña.</p>
       <input class="form-submit" type="submit" value="Login">
     </form>
@@ -28,6 +15,11 @@
 <script>
 import UsuarioLogin from '../model/UsuarioLogin';
 export default {
+  mounted() {
+    if (localStorage.getItem('token')!=null) {
+      this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+    }
+  },
   data: () => ({
     email: "",
     password: "",
@@ -38,12 +30,23 @@ export default {
     login() {
       console.log(this.email);
       console.log(this.password);
-      const usuario= new UsuarioLogin(this.email,this.password);
-      this.$axios.$post("http://localhost:8080/usuarios/auth", usuario).then(response => console.log(response))
-                .catch(error => {
-                    this.errorMessage = error.message;
-                    console.error("There was an error!", error);
-                });
+      const usuario = new UsuarioLogin(this.email, this.password);
+      this.$axios.$post("http://localhost:8080/auth/login", usuario).
+        then(response => {
+          console.log(response);
+          this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + response.token;
+          console.log(this.$axios.defaults.headers)
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('userName', response.name);
+          localStorage.setItem('authorities', response.authorities[0].authority);
+          //this.$storage.setUniversal('token', response.token);
+          this.$router.push('/')
+        }
+        )
+        .catch(error => {
+          this.errorMessage = error.message;
+          console.error("There was an error!", error);
+        });
     }
   }
 
@@ -53,10 +56,13 @@ export default {
 <style lang="scss" scoped>
 .login {
   padding: 2rem;
+  min-height: 668px;
 }
+
 .title {
   text-align: center;
 }
+
 .form {
   margin: 3rem auto;
   display: flex;
@@ -70,25 +76,30 @@ export default {
   padding: 40px;
   box-shadow: 0 4px 10px 4px rgba(0, 0, 0, 0.3);
 }
+
 .form-label {
   margin-top: 2rem;
   color: white;
   margin-bottom: 0.5rem;
+
   &:first-of-type {
     margin-top: 0rem;
   }
 }
+
 .form-input {
   padding: 10px 15px;
   background: none;
   background-image: none;
   border: 1px solid white;
   color: white;
+
   &:focus {
     outline: 0;
     border-color: #1ab188;
   }
 }
+
 .form-submit {
   background: #1ab188;
   border: none;
@@ -97,6 +108,7 @@ export default {
   padding: 1rem 0;
   cursor: pointer;
   transition: background 0.2s;
+
   &:hover {
     background: #0b9185;
   }
