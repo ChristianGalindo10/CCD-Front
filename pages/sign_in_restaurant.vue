@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-form @submit="onSubmit" @reset="onReset" v-if="show">
+    <b-form @submit="onSubmit" @reset="onReset" v-if="show" class="formulario">
       <b-form-group id="input-group-1" label="NIT:" label-for="input-1">
         <b-form-input v-model="form.nit" :state="validation" id="input-1" @keypress="onlyNumber" required>
         </b-form-input>
@@ -24,7 +24,7 @@
       <b-form-group id="input-group-4" label="Especialidad:" label-for="input-4">
         <b-form-input id="input-4" v-model="form.especialidad" required></b-form-input>
       </b-form-group>
-      <fieldset id="datosCuenta">
+      <div class="subform">
         <legend>Datos Cuenta:</legend>
         <b-form-group id="input-group-5" label="Email address:" label-for="input-5"
           description="We'll never share your email with anyone else.">
@@ -40,7 +40,7 @@
           </b-form-text>
           <!--<b-form-input id="input-5" v-model="form.password" placeholder="Enter password" required></b-form-input>-->
         </b-form-group>
-      </fieldset>
+      </div>
 
       <b-button type="submit" variant="primary">Submit</b-button>
       <b-button type="reset" variant="danger">Reset</b-button>

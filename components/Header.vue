@@ -80,9 +80,7 @@ export default {
         if (localStorage.getItem('token') != null) {
             this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
             this.name = localStorage.getItem('userName')
-            
             this.logIn = true
-            console.log(this.logIn)
         }
     },
     data() {

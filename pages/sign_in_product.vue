@@ -1,7 +1,17 @@
 <template>
   <div>
-    <b-form @submit="onSubmit" @reset="onReset" v-if="show">
-
+    <b-form @submit.prevent="onSubmit" @reset="onReset" v-if="show" class="formulario">
+      <div v-if="submitted === true">
+        <div v-if="hasErrors" class="error">
+          <strong>Se han producido los siguientes errores:</strong>
+          <ul>
+            <li v-for="error in errors">{{ error }}</li>
+          </ul>
+        </div>
+        <div v-else class="correcto">
+          <strong>Enviado!</strong>
+        </div>
+      </div>
       <b-form-group id="input-group-1" label="Nombre:" label-for="input-1">
         <b-form-input id="input-1" v-model="form.nombre" placeholder="Enter Name" required>
         </b-form-input>
@@ -16,12 +26,47 @@
       </b-form-group>
 
       <b-form-group id="input-group-4" label="Precio:" label-for="input-4">
-        <b-form-input id="input-4" v-model="form.precio" placeholder="Enter price" @keypress="onlyNumber" required></b-form-input>
+        <b-form-input id="input-4" v-model="form.precio" placeholder="Enter price" @keypress="onlyNumber" required>
+        </b-form-input>
       </b-form-group>
 
       <b-form-group id="input-group-5" label="Foto:" label-for="input-5">
-        <b-form-file id="input-5" type="file" v-model="form.picByte" @change="obtenerImagen($event)" accept="image/*" placeholder="Pick a photo" ></b-form-file>
+        <b-form-file id="input-5" type="file" v-model="form.picByte" @change="obtenerImagen($event)" accept="image/*"
+          placeholder="Pick a photo"></b-form-file>
       </b-form-group>
+      <hr />
+      <div>
+        <legend>Ingredientes:</legend>
+        <div class="form-inline newInput" v-for="(ingredient, counter) in form.ingredients" v-bind:key="counter">
+          <span>{{ counter + 1 }}</span>
+          <label class="sr-only" for="inline-form-input-ingrediente">Name</label>
+          <b-form-group label="Ingrediente: " label-for="ingredient">
+            <b-form-select id="input-3" class="mb-2 mr-sm-2 mb-sm-0" style="width: 200px"
+              v-model="ingredient.ingredient" :options="listaIngredientes" required></b-form-select>
+          </b-form-group>
+
+          <label class="sr-only" for="inline-form-input-cantidad">Name</label>
+          <b-form-group label="Cantidad: " label-for="quantity">
+            <b-form-input class="mb-2 mr-sm-2 mb-sm-0" v-model="ingredient.quantity" type="number" min="0" required>
+            </b-form-input>
+
+          </b-form-group>
+          <span @click="deleteIngredient(counter)">
+            <b-icon-x-circle-fill variant="danger"></b-icon-x-circle-fill>
+          </span>
+          <!-- <label for="ingredient">{{ counter + 1 }}. Ingrediente:</label>
+          <input type="text" v-model="ingredient.ingredient" required>
+          <label for="quantity">Cantidad:</label>
+          <input type="text" v-model="ingredient.quantity" required> -->
+        </div>
+
+        <a href="#">
+          <b-icon-plus-circle-dotted variant="success" id="addIngredient" @click="addIngredient">
+          </b-icon-plus-circle-dotted>
+        </a>
+      </div>
+
+
 
       <b-button type="submit" variant="primary">Submit</b-button>
       <b-button type="reset" variant="danger">Reset</b-button>
@@ -31,19 +76,72 @@
     </b-card>
   </div>
 </template>
+
+<style scoped>
+span {
+  width: 30px;
+  float: right;
+  cursor: pointer;
+}
+
+
+.previous {
+  border: 1.5px solid;
+  padding: 5px;
+  margin-bottom: 10px;
+}
+
+.newInput {
+  justify-content: space-evenly;
+  margin: 20px;
+}
+</style>
+
 <script>
+import { BIcon, BIconPlusCircleDotted, BIconXCircleFill } from 'bootstrap-vue'
 import Producto from '../model/Producto';
+
 export default {
+  components: {
+    BIcon,
+    BIconPlusCircleDotted,
+    BIconXCircleFill
+  },
   mounted() {
-    if (localStorage.getItem('token')!=null) {
+    if (localStorage.getItem('token') != null) {
       this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
-    }else{
+      if (localStorage.getItem('authorities') != 'restaurante') {
+        alert("Debe iniciar sesión como restaurante!");
+        this.$router.push('/log_in')
+      } else {
+        this.$axios.$get('http://localhost:8080/restaurantes/get').then(
+          res => {
+            let i_restaurants = res;
+            window.restaurante = i_restaurants.find(r => {
+              return r.nombre == localStorage.getItem('userName');
+            });
+          }
+        ).catch(response => console.log(response), error => {
+          this.errorMessage = error.message;
+          console.error("There was an error!", error);
+        });
+        this.$axios.$get('http://localhost:8080/ingredientes/get').then(
+          res => {
+            res.forEach(element => {
+              this.listaIngredientes.push(element.nombre);
+            });
+          }
+        ).catch(response => console.log(response), error => {
+          this.errorMessage = error.message;
+          console.error("There was an error!", error);
+        });
+
+        //const restaurante = new Restaurante(this.form.nit, this.form.name, this.form.telefono, this.form.especialidad, this.form.email,this.form.password);
+      }
+    } else {
       this.$router.push('/log_in')
     }
-    if(localStorage.getItem('authorities')!='restaurante'){
-      alert("Debe iniciar sesión como restaurante!");
-      this.$router.push('/log_in')
-    }
+
   },
   data() {
     return {
@@ -53,43 +151,83 @@ export default {
         customizable: false,
         precio: null,
         picByte: null,
-        checked: []
+        ingredients: [
+          {
+            ingredient: '',
+            quantity: 0
+          }
+        ]
       },
       types: [{ text: 'Select One', value: null }, 'Si', 'No'],
-      show: true
+      show: true,
+      listaIngredientes: [],
+      submitted: false,
+      errors: []
+      //listaI: this.window.listaIngredientes
+    }
+  },
+  computed: {
+    hasErrors: function () {
+      return !!this.errors.length;
     }
   },
   methods: {
-    obtenerImagen(e){
-                this.form.picByte= e.target.files[0];
-                console.log(this.form.picByte);
+    addIngredient() {
+      this.form.ingredients.push({
+        ingredient: '',
+        quantity: 0
+      })
+    },
+    deleteIngredient(counter) {
+      this.form.ingredients.splice(counter, 1)
+    },
+    obtenerImagen(e) {
+      this.form.picByte = e.target.files[0];
+      console.log(this.form.picByte);
     },
     onSubmit(event) {
       event.preventDefault()
+      this.errors = [];
+      this.submitted = true;
       alert(JSON.stringify(this.form))
       console.log(this.form.personalizable);
-      if(this.form.personalizable=='Si'){
-        this.form.personalizable=true
-      }else{
-        this.form.personalizable=false
+      const busqueda = this.form.ingredients.reduce((a, i) => {
+        a[i.ingredient] = ++a[i.ingredient] || 0;
+        return a;
+      }, {});
+
+      const duplicados = this.form.ingredients.filter((i) => {
+        return busqueda[i.ingredient];
+      });
+      if (duplicados.length>0) {
+        this.errors.push('Ingredientes duplicados');
+        return false;
+      }
+      if (this.form.personalizable == 'Si') {
+        this.form.personalizable = true
+      } else {
+        this.form.personalizable = false
       }
       const producto = new Producto(this.form.nombre, this.form.tipo, this.form.personalizable, this.form.precio);
       console.log(producto)
-      if(this.form.picByte!=null){
-          const uploadData = new FormData();
-          uploadData.append('imageFile', this.form.picByte, this.form.picByte.name);
-          this.$axios.$post("http://localhost:8080/productos/upload", uploadData )
+      if (this.form.picByte != null) {
+        const uploadData = new FormData();
+        uploadData.append('imageFile', this.form.picByte, this.form.picByte.name);
+        this.$axios.$post("http://localhost:8080/productos/upload", uploadData)
           .then(res => {
             console.log(res);
             if (res.mensaje == "200") {
               console.log('subi la imagen')
               this.message2 = 'Image uploaded successfully';
-              this.$axios.$post("http://localhost:8080/productos/newproduct", producto)
-              .then(response => console.log(response))
-              .catch(response => console.log(response),error => {
-              this.errorMessage = error.message;
-              console.error("There was an error!", error);
-              });
+              this.$axios.$post("http://localhost:8080/productos/newproduct?nit=" + restaurante.nit, producto)
+                .then(response => {
+                  console.log(response);
+                  return true;
+                })
+                .catch(response => console.log(response), error => {
+                  this.errorMessage = error.message;
+                  console.error("There was an error!", error);
+                });
             } else {
               console.log('f');
               console.log(res.status);
@@ -97,15 +235,19 @@ export default {
             }
           }).catch((promise) => {
             console.log(promise)
-            this.handleError(promise)}
-            );
-      }else{
-            this.$axios.$post("http://localhost:8080/productos/newproduct", producto)
-              .then(response => console.log(response))
-              .catch(response => console.log(response),error => {
-              this.errorMessage = error.message;
-              console.error("There was an error!", error);
-              });
+            this.handleError(promise)
+          }
+          );
+      } else {
+        this.$axios.$post("http://localhost:8080/productos/newproduct?nit=" + restaurante.nit, producto)
+          .then(response => {
+            console.log(response);
+            return true;
+          })
+          .catch(response => console.log(response), error => {
+            this.errorMessage = error.message;
+            console.error("There was an error!", error);
+          });
       }
     },
     onReset(event) {
@@ -114,8 +256,8 @@ export default {
       this.form.nombre = ''
       this.form.tipo = null
       this.form.customizable = false
-      this.form.precio= null
-      this.form.picByte= null
+      this.form.precio = null
+      this.form.picByte = null
       this.form.checked = []
       // Trick to reset/clear native browser form validation state
       this.show = false
@@ -130,11 +272,11 @@ export default {
         $event.preventDefault();
       }
     }
-  },
- /* computed: {
-    validation() {
-      //return this.form.unidadMedida.length >= 1 && this.form.unidadMedida.length <=5
-    }
-  }*/
+  }
+  /*computed: {
+     validation(q) {
+       return q >= 0
+     }
+   }*/
 }
 </script>
