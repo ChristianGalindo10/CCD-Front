@@ -39,7 +39,6 @@ export default {
           localStorage.setItem('token', response.token);
           localStorage.setItem('userName', response.name);
           localStorage.setItem('authorities', response.authorities[0].authority);
-          //this.$storage.setUniversal('token', response.token);
           //this.$router.push('/')
           window.location.href = 'http://localhost:3000/';
         }

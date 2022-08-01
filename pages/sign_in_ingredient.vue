@@ -56,7 +56,7 @@ export default {
       console.log(this.form.unidadMedida);
       const ingrediente = new Ingrediente(this.form.unidades, this.form.unidadMedida, this.form.nombre);
       console.log(ingrediente)
-      this.$axios.$post("http://localhost:8080/ingredientes/add", ingrediente)
+      this.$axios.$post("http://localhost:8080/ingredientes/newingredient", ingrediente)
         .then(response => console.log(response))
         .catch(error => {
           this.errorMessage = error.message;
