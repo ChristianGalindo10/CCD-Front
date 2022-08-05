@@ -18,6 +18,8 @@ export default {
   mounted() {
     if (localStorage.getItem('token')!=null) {
       this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+      alert("ya se encuentra loggeado");
+      this.$router.push('/')
     }
   },
   data: () => ({

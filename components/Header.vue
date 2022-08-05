@@ -46,7 +46,7 @@
                             Ingresar
                         </NuxtLink>
                         <NuxtLink v-if="logIn" class="nav-link" to="/User">
-                            {{name}}
+                            {{ name }}
                         </NuxtLink>
                         <a href="#" v-if="logIn" class="nav-link" @click="removeToken">Cerrar Sesión</a>
                         <!-- <button >Cerrar Sesión</button> -->
@@ -76,12 +76,12 @@
 <script>
 export default {
     name: 'Header',
+    beforeMount() {
+        window.addEventListener("load", this.onLoad);
+        //window.addEventListener("beforeunload", this.onUnload);
+    },
     mounted() {
-        if (localStorage.getItem('token') != null) {
-            this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
-            this.name = localStorage.getItem('userName')
-            this.logIn = true
-        }
+
     },
     data() {
         return {
@@ -89,12 +89,19 @@ export default {
             name: ''
         }
     },
-    methods:{
-        removeToken(){
+    methods: {
+        removeToken() {
             localStorage.clear()
             this.logIn = false
             this.$router.push('/')
-            
+
+        },
+        onLoad() {
+            if (localStorage.getItem('token') != null) {
+                this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+                this.name = localStorage.getItem('userName')
+                this.logIn = true
+            }
         }
     }
 }

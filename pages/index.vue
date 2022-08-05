@@ -45,19 +45,11 @@
 }**/
 
 export default {
+  beforeMount() {
+    window.addEventListener("load", this.onLoad);
+  },
   mounted() {
-    console.log(localStorage.getItem('token'))
-    console.log(localStorage.getItem('authorities'))
-    if (localStorage.getItem('token')!=null) {
-      this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
-    }
-    /*if(localStorage.getItem('authorities')=='Usuario'){
-      alert("Debe iniciar sesión!");
-      this.$router.push('/log_in')
-    }*/
-    const ip = this.$axios.$get('http://localhost:8080/usuarios/get');
-    console.log(ip);
-    return { ip }
+
   },
   data() {
     return {
@@ -84,7 +76,7 @@ export default {
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla laoreet arcu dignissim urna suscipit interdum. Quisque odio sapien, ultricies sit amet massa vel, pharetra bibendum est. Nunc egestas euismod odio non feugiat. Phasellus blandit euismod nisi a lobortis. Donec pharetra risus ut volutpat efficitur. Morbi pellentesque enim non facilisis blandit.",
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla laoreet arcu dignissim urna suscipit interdum. Quisque odio sapien, ultricies sit amet massa vel, pharetra bibendum est. Nunc egestas euismod odio non feugiat. Phasellus blandit euismod nisi a lobortis. Donec pharetra risus ut volutpat efficitur. Morbi pellentesque enim non facilisis blandit."
       ],
-      color_options: ["#EBB9D2", "#FE9968", "#7FE0EB", "#6CE5B1","#EBB9D2", "#FE9968", "#7FE0EB", "#6CE5B1"],
+      color_options: ["#EBB9D2", "#FE9968", "#7FE0EB", "#6CE5B1", "#EBB9D2", "#FE9968", "#7FE0EB", "#6CE5B1"],
       image_options: [
         "img/ca1.jpg",
         "img/ca2.jpg",
@@ -171,10 +163,31 @@ export default {
         this.currentOptionText2 = this.text2_options[this.i];
         this.animPrev = false;
       }, 650);
+    },
+    onLoad() {
+      console.log(localStorage.getItem('token'))
+      console.log(localStorage.getItem('authorities'))
+      if (localStorage.getItem('token') != null) {
+        this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+      }
+      /*if(localStorage.getItem('authorities')=='Usuario'){
+        alert("Debe iniciar sesión!");
+        this.$router.push('/log_in')
+      }*/
+      const ip = this.$axios.$get('http://localhost:8080/usuarios/get');
+      ip.then(res => {
+        console.log(res);
+      }).catch( err => {
+        console.log(err);
+        alert('Sesión expirada, vuelva a iniciar sesión');
+        localStorage.clear();
+        //this.$router.push('/log_in');
+        window.location.href = 'http://localhost:3000/log_in';
+      })
+      //console.log(ip);
+      //return { ip }
     }
   },
-  async asyncData({ app }) {
-    
-  }
+
 }
 </script>

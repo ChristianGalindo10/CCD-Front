@@ -42,14 +42,16 @@
           <label class="sr-only" for="inline-form-input-ingrediente">Name</label>
           <b-form-group label="Ingrediente: " label-for="ingredient">
             <b-form-select id="input-3" class="mb-2 mr-sm-2 mb-sm-0" style="width: 200px"
-              v-model="ingredient.ingredient" :options="listaIngredientes" required></b-form-select>
+              v-model="ingredient.ingredient" required>
+              <b-form-select-option v-for="(item, index) in listaIngredientes" :value="item" :key="index">{{ item }}
+                ({{ listaMedidas[index] }})</b-form-select-option>
+            </b-form-select>
           </b-form-group>
 
           <label class="sr-only" for="inline-form-input-cantidad">Name</label>
           <b-form-group label="Cantidad: " label-for="quantity">
             <b-form-input class="mb-2 mr-sm-2 mb-sm-0" v-model="ingredient.quantity" type="number" min="0" required>
             </b-form-input>
-
           </b-form-group>
           <span @click="deleteIngredient(counter)">
             <b-icon-x-circle-fill variant="danger"></b-icon-x-circle-fill>
@@ -100,6 +102,7 @@ span {
 <script>
 import { BIcon, BIconPlusCircleDotted, BIconXCircleFill } from 'bootstrap-vue'
 import Producto from '../model/Producto';
+import IngredienteProducto from '../model/IngredienteProducto';
 
 export default {
   components: {
@@ -107,41 +110,16 @@ export default {
     BIconPlusCircleDotted,
     BIconXCircleFill
   },
+  beforeMount() {
+    window.addEventListener("load", this.onLoad);
+  },
   mounted() {
-    if (localStorage.getItem('token') != null) {
-      this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
-      if (localStorage.getItem('authorities') != 'restaurante') {
-        alert("Debe iniciar sesión como restaurante!");
-        this.$router.push('/log_in')
-      } else {
-        this.$axios.$get('http://localhost:8080/restaurantes/get').then(
-          res => {
-            let i_restaurants = res;
-            window.restaurante = i_restaurants.find(r => {
-              return r.nombre == localStorage.getItem('userName');
-            });
-          }
-        ).catch(response => console.log(response), error => {
-          this.errorMessage = error.message;
-          console.error("There was an error!", error);
-        });
-        this.$axios.$get('http://localhost:8080/ingredientes/get').then(
-          res => {
-            res.forEach(element => {
-              this.listaIngredientes.push(element.nombre);
-            });
-          }
-        ).catch(response => console.log(response), error => {
-          this.errorMessage = error.message;
-          console.error("There was an error!", error);
-        });
 
-        //const restaurante = new Restaurante(this.form.nit, this.form.name, this.form.telefono, this.form.especialidad, this.form.email,this.form.password);
-      }
-    } else {
-      this.$router.push('/log_in')
-    }
 
+  },
+  beforeDestroy() {
+    window.removeEventListener("load", this.onLoad);
+    window.removeEventListener("beforeunload", this.onUnload);
   },
   data() {
     return {
@@ -161,6 +139,8 @@ export default {
       types: [{ text: 'Select One', value: null }, 'Si', 'No'],
       show: true,
       listaIngredientes: [],
+      listaMedidas: [],
+      listaIds: [],
       submitted: false,
       errors: []
       //listaI: this.window.listaIngredientes
@@ -199,7 +179,7 @@ export default {
       const duplicados = this.form.ingredients.filter((i) => {
         return busqueda[i.ingredient];
       });
-      if (duplicados.length>0) {
+      if (duplicados.length > 0) {
         this.errors.push('Ingredientes duplicados');
         return false;
       }
@@ -208,18 +188,27 @@ export default {
       } else {
         this.form.personalizable = false
       }
-      const producto = new Producto(this.form.nombre, this.form.tipo, this.form.personalizable, this.form.precio);
-      console.log(producto)
+      var producto = new Producto(this.form.nombre, this.form.tipo, this.form.personalizable, this.form.precio);
+      console.log(this.form.ingredients)
+      //producto.producto_ingredientes = this.form.ingredients;
+      let url = "http://localhost:8080/productos/newproduct?nit=" + restaurante.nit + "&ingredientes=";
+      this.form.ingredients.forEach(element => {
+        url = url.concat(element.ingredient,",",element.quantity,",");
+      });
+      url = url.substring(0, url.length - 1);
+      console.log(url)
       if (this.form.picByte != null) {
         const uploadData = new FormData();
         uploadData.append('imageFile', this.form.picByte, this.form.picByte.name);
+        
         this.$axios.$post("http://localhost:8080/productos/upload", uploadData)
           .then(res => {
             console.log(res);
             if (res.mensaje == "200") {
               console.log('subi la imagen')
               this.message2 = 'Image uploaded successfully';
-              this.$axios.$post("http://localhost:8080/productos/newproduct?nit=" + restaurante.nit, producto)
+              //producto.producto_ingredientes = this.ingredients;
+              this.$axios.$post(url, producto)
                 .then(response => {
                   console.log(response);
                   return true;
@@ -239,7 +228,7 @@ export default {
           }
           );
       } else {
-        this.$axios.$post("http://localhost:8080/productos/newproduct?nit=" + restaurante.nit, producto)
+        this.$axios.$post(url, producto)
           .then(response => {
             console.log(response);
             return true;
@@ -271,6 +260,44 @@ export default {
       if ((keyCode < 48 || keyCode > 57) && keyCode !== 46) { // 46 is dot
         $event.preventDefault();
       }
+    },
+    onLoad() {
+      if (localStorage.getItem('token') != null) {
+        this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+        if (localStorage.getItem('authorities') != 'restaurante') {
+          alert("Debe iniciar sesión como restaurante!");
+          this.$router.push('/log_in')
+        } else {
+          this.$axios.$get('http://localhost:8080/restaurantes/get').then(
+            res => {
+              let i_restaurants = res;
+              window.restaurante = i_restaurants.find(r => {
+                return r.nombre == localStorage.getItem('userName');
+              });
+            }
+          ).catch(response => console.log(response), error => {
+            this.errorMessage = error.message;
+            console.error("There was an error!", error);
+          });
+          this.$axios.$get('http://localhost:8080/ingredientes/get').then(
+            res => {
+              res.forEach(element => {
+                this.listaIngredientes.push(element.nombre);
+                this.listaMedidas.push(element.unidadMedida);
+                this.listaIds.push(element.idIngrediente);
+              });
+            }
+          ).catch(response => console.log(response), error => {
+            this.errorMessage = error.message;
+            console.error("There was an error!", error);
+          });
+
+          //const restaurante = new Restaurante(this.form.nit, this.form.name, this.form.telefono, this.form.especialidad, this.form.email,this.form.password);
+        }
+      } else {
+        alert("Debe iniciar sesión como restaurante!");
+        this.$router.push('/log_in')
+      }
     }
   }
   /*computed: {
@@ -279,4 +306,5 @@ export default {
      }
    }*/
 }
+
 </script>
