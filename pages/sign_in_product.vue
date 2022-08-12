@@ -18,11 +18,11 @@
       </b-form-group>
 
       <b-form-group id="input-group-2" label="Tipo:" label-for="input-2">
-        <b-form-input id="input-2" v-model="form.tipo" placeholder="Enter type" required></b-form-input>
+        <b-form-select id="input-2" v-model="form.tipo" :options="platos" required></b-form-select>
       </b-form-group>
 
       <b-form-group id="input-group-3" label="Customizable:" label-for="input-3">
-        <b-form-select id="input-3" v-model="form.personalizable" :options="types" required></b-form-select>
+        <b-form-select id="input-3" v-model="form.customizable" :options="types" required></b-form-select>
       </b-form-group>
 
       <b-form-group id="input-group-4" label="Precio:" label-for="input-4">
@@ -33,6 +33,11 @@
       <b-form-group id="input-group-5" label="Foto:" label-for="input-5">
         <b-form-file id="input-5" type="file" v-model="form.picByte" @change="obtenerImagen($event)" accept="image/*"
           placeholder="Pick a photo"></b-form-file>
+      </b-form-group>
+
+      <b-form-group id="input-group-6" label="Stock:" label-for="input-6" description="El stock depende de la disponibilidad de los ingredientes.">
+        <b-form-input class="mb-2 mr-sm-2 mb-sm-0"  v-model="form.stock" type="number" min="0" :disabled="form.ingredients.length>0" required>
+            </b-form-input>
       </b-form-group>
       <hr />
       <div>
@@ -102,7 +107,6 @@ span {
 <script>
 import { BIcon, BIconPlusCircleDotted, BIconXCircleFill } from 'bootstrap-vue'
 import Producto from '../model/Producto';
-import IngredienteProducto from '../model/IngredienteProducto';
 
 export default {
   components: {
@@ -125,18 +129,15 @@ export default {
     return {
       form: {
         nombre: '',
-        tipo: null,
-        customizable: false,
+        tipo: 'Entrada',
+        customizable: 'No',
         precio: null,
         picByte: null,
-        ingredients: [
-          {
-            ingredient: '',
-            quantity: 0
-          }
-        ]
+        ingredients: [],
+        stock: 0
       },
-      types: [{ text: 'Select One', value: null }, 'Si', 'No'],
+      types: ['Si', 'No'],
+      platos: ['Entrada', 'Plato Fuerte', 'Postre' , 'Bebida', 'Acompañamiento'],
       show: true,
       listaIngredientes: [],
       listaMedidas: [],
@@ -183,15 +184,18 @@ export default {
         this.errors.push('Ingredientes duplicados');
         return false;
       }
-      if (this.form.personalizable == 'Si') {
-        this.form.personalizable = true
-      } else {
-        this.form.personalizable = false
+      let personalizable = false;
+      if (this.form.customizable == 'Si') {
+        personalizable = true
       }
-      var producto = new Producto(this.form.nombre, this.form.tipo, this.form.personalizable, this.form.precio);
+      var producto = new Producto(this.form.nombre, this.form.tipo, personalizable, this.form.precio);
       console.log(this.form.ingredients)
       //producto.producto_ingredientes = this.form.ingredients;
-      let url = "http://localhost:8080/productos/newproduct?nit=" + restaurante.nit + "&ingredientes=";
+      let stock = this.form.stock;
+      if(this.form.ingredients.length>0){
+        stock = 1000;
+      }
+      let url = "http://localhost:8080/productos/newproduct?stock=" + stock + "&nit=" + restaurante.nit + "&ingredientes=";
       this.form.ingredients.forEach(element => {
         url = url.concat(element.ingredient,",",element.quantity,",");
       });
@@ -244,7 +248,7 @@ export default {
       // Reset our form values
       this.form.nombre = ''
       this.form.tipo = null
-      this.form.customizable = false
+      this.form.customizable = ''
       this.form.precio = null
       this.form.picByte = null
       this.form.checked = []
