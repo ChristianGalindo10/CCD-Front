@@ -32,6 +32,19 @@
         <div id="image" :style="imgStyle"></div>
       </div>
     </div>
+    <b-row class="my-1" style="display: flex;justify-content: center">
+      <div>
+        <label for="filter">Filtrar por:</label>
+      </div>
+      <b-col sm="9">
+        <b-form-select id="filter" v-model="selected" :options="options" @change="onChange"></b-form-select>
+      </b-col>
+    </b-row>
+
+
+    <legend>Productos:</legend>
+    <listado-items :dataItems="dataItemsProductos"></listado-items>
+
     <!-- <div style="padding: 10px">
       <h1>Nuxt.js + Spring Boot</h1>
       <p>Message from API: {{ ip }}</p>
@@ -43,8 +56,10 @@
 /**export default {
   name: 'IndexPage'
 }**/
+import ListadoItems from '../components/ListadoItems.vue';
 
 export default {
+
   beforeMount() {
     window.addEventListener("load", this.onLoad);
   },
@@ -53,6 +68,32 @@ export default {
   },
   data() {
     return {
+      selected: 'Todo',
+      allProducts: [],
+      allRestaurants: [],
+      allProductsRestaurants: [],
+      options: [
+        { value: 'Todo', text: 'Todo' },
+        {
+          label: 'Menús',
+          options: [
+            { value: 'AllMenus', text: 'Todos' },
+            { value: 'Personalizable', text: 'Personalizables' }
+          ]
+        },
+        {
+          label: 'Productos',
+          options: [
+            { value: 'AllProducts', text: 'Todos' },
+            { value: 'Entrada', text: 'Entradas' },
+            { value: 'Plato Fuerte', text: 'Platos Fuertes' },
+            { value: 'Postre', text: 'Postres' },
+            { value: 'Bebida', text: 'Bebidas' },
+            { value: 'Acompañamiento', text: 'Acompañamientos' }
+          ]
+        }
+      ],
+      dataItemsProductos: [],
       slide: 0,
       sliding: null,
       i: 0,
@@ -111,6 +152,17 @@ export default {
     }
   },
   methods: {
+    onChange() {
+      console.log(this.selected);
+      var tipo = this.selected;
+      if (this.selected == "AllProducts") {
+        this.dataItemsProductos = this.allProducts;
+      } else {
+        this.dataItemsProductos = this.allProducts.filter(function (el) {
+          return el.tipo == tipo;
+        });
+      }
+    },
     onSlideStart(slide) {
       this.sliding = true
     },
@@ -174,20 +226,49 @@ export default {
         alert("Debe iniciar sesión!");
         this.$router.push('/log_in')
       }*/
-      const ip = this.$axios.$get('http://localhost:8080/usuarios/get');
-      ip.then(res => {
-        console.log(res);
-      }).catch( err => {
+
+      this.$axios.$get('http://localhost:8080/restaurantes/get').then(res => {
+        this.allRestaurants = res;
+        this.$axios.$get('http://localhost:8080/restaurantes/getAllProducts').then(res2 => {
+          this.allProductsRestaurants = res2;
+          this.$axios.$get('http://localhost:8080/productos/get').then(res3 => {
+            //this.allProducts = res;
+            res3.forEach(element => {
+              this.allProducts.push({
+                id: element.idProducto,
+                src: 'data:image/jpeg;base64,' + element.picByte,
+                alt: element.nombre,
+                price: element.precio,
+                tipo: element.tipo
+              });
+            });
+            this.dataItemsProductos = this.allProducts;
+          }).catch(err => {
+            console.log(err);
+            alert('Sesión expirada, vuelva a iniciar sesión');
+            localStorage.clear();
+            //this.$router.push('/log_in');
+            window.location.href = 'http://localhost:3000/log_in';
+          })
+        }).catch(err => {
+          console.log(err);
+          alert('Sesión expirada, vuelva a iniciar sesión');
+          localStorage.clear();
+          //this.$router.push('/log_in');
+          window.location.href = 'http://localhost:3000/log_in';
+        })
+      }).catch(err => {
         console.log(err);
         alert('Sesión expirada, vuelva a iniciar sesión');
         localStorage.clear();
         //this.$router.push('/log_in');
         window.location.href = 'http://localhost:3000/log_in';
-      })
-      //console.log(ip);
-      //return { ip }
+      });
     }
   },
+  components: {
+    ListadoItems
+  }
 
 }
 </script>
