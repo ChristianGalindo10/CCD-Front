@@ -23,6 +23,7 @@
     </b-card>
   </div>
 </template>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
 import Ingrediente from '../model/Ingrediente';
 
@@ -37,6 +38,9 @@ export default {
       alert("Debe iniciar sesión como restaurante!");
       this.$router.push('/log_in')
     }
+    let recaptchaScript = document.createElement('script')
+    recaptchaScript.setAttribute('src', '//cdn.jsdelivr.net/npm/sweetalert2@11')
+    document.head.appendChild(recaptchaScript)
   },
   data() {
     return {
@@ -57,7 +61,16 @@ export default {
       const ingrediente = new Ingrediente(this.form.unidades, this.form.unidadMedida, this.form.nombre);
       console.log(ingrediente)
       this.$axios.$post("http://localhost:8080/ingredientes/newingredient", ingrediente)
-        .then(response => console.log(response))
+        .then(response => {
+          console.log(response)
+          Swal.fire({
+            icon: 'success',
+            title: 'Exito',
+            text: 'Ingrediente recibido',
+          })
+          }
+
+          )
         .catch(error => {
           this.errorMessage = error.message;
           console.error("There was an error!", error);

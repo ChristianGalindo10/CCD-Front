@@ -91,6 +91,9 @@ export default {
         window.addEventListener("load", this.onLoad);
     },
     mounted() {
+        let recaptchaScript = document.createElement('script')
+        recaptchaScript.setAttribute('src', '//cdn.jsdelivr.net/npm/sweetalert2@11')
+        document.head.appendChild(recaptchaScript)
     },
     beforeDestroy() {
         window.removeEventListener("load", this.onLoad);
@@ -133,6 +136,10 @@ export default {
     methods: {
         onSelectImage(img) {
             alert(`Selected image: ${img.alt}`);
+        },
+        obtenerImagen(e) {
+            this.form.picByte = e.target.files[0];
+            console.log(this.form.picByte);
         },
         onSelectMultipleImageEntrada(images) {
             this.selectedImagesEntrada = images;
@@ -189,6 +196,11 @@ export default {
                             this.$axios.$post(url, menu)
                                 .then(response => {
                                     console.log(response);
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Exito',
+                                        text: 'Menu recibido',
+                                    })
                                     return true;
                                 })
                                 .catch(response => console.log(response), error => {
@@ -209,6 +221,11 @@ export default {
                 this.$axios.$post(url, menu)
                     .then(response => {
                         console.log(response);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Exito',
+                            text: 'Menu recibido',
+                         })
                         return true;
                     })
                     .catch(response => console.log(response), error => {

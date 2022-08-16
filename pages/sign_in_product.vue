@@ -31,7 +31,8 @@
       </b-form-group>
 
       <b-form-group id="input-group-5" label="Foto:" label-for="input-5">
-        <b-form-file id="input-5" type="file" v-model="form.picByte" @change="obtenerImagen($event)" accept="image/*"
+        <b-form-file id="input-5" type="file" v-model="form.picByte" 
+        @change="obtenerImagen($event)"  accept="image/*"
           placeholder="Pick a photo"></b-form-file>
       </b-form-group>
 
@@ -118,8 +119,9 @@ export default {
     window.addEventListener("load", this.onLoad);
   },
   mounted() {
-
-
+    let recaptchaScript = document.createElement('script')
+    recaptchaScript.setAttribute('src', '//cdn.jsdelivr.net/npm/sweetalert2@11')
+    document.head.appendChild(recaptchaScript)
   },
   beforeDestroy() {
     window.removeEventListener("load", this.onLoad);
@@ -215,6 +217,11 @@ export default {
               this.$axios.$post(url, producto)
                 .then(response => {
                   console.log(response);
+                  Swal.fire({
+                    icon: 'success',
+                    title: 'Exito',
+                    text: 'Producto recibido',
+                  })
                   return true;
                 })
                 .catch(response => console.log(response), error => {
@@ -235,6 +242,11 @@ export default {
         this.$axios.$post(url, producto)
           .then(response => {
             console.log(response);
+            Swal.fire({
+                    icon: 'success',
+                    title: 'Exito',
+                    text: 'Producto recibido',
+            })
             return true;
           })
           .catch(response => console.log(response), error => {

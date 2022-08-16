@@ -15,12 +15,15 @@
 <script>
 import UsuarioLogin from '../model/UsuarioLogin';
 export default {
-  mounted() {
+  mounted() { 
     if (localStorage.getItem('token')!=null) {
       this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
       alert("ya se encuentra loggeado");
       this.$router.push('/')
     }
+    let recaptchaScript = document.createElement('script')
+    recaptchaScript.setAttribute('src', '//cdn.jsdelivr.net/npm/sweetalert2@11')
+    document.head.appendChild(recaptchaScript)
   },
   data: () => ({
     email: "",

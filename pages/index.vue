@@ -43,7 +43,10 @@
 
 
     <legend>Productos:</legend>
-    <listado-items :dataItems="dataItemsProductos"></listado-items>
+    <listado-items :dataItems="dataItemsProductos" ></listado-items>
+
+    <legend>Menus:</legend>
+    <listado-items :dataItems="dataItemsMenus" ></listado-items>
 
     <!-- <div style="padding: 10px">
       <h1>Nuxt.js + Spring Boot</h1>
@@ -51,7 +54,10 @@
     </div> -->
   </div>
 </template>
-
+<!--<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" integrity="sha512-3pIirOrwegjM6erE5gPSwkUzO+3cTjpnV9lexlNZqvupR64iZBnOOTiiLPb9M36zpMScbmUNIcHUqKD47M719g==" crossorigin="anonymous" referrerpolicy="no-referrer" />-->
 <script>
 /**export default {
   name: 'IndexPage'
@@ -94,6 +100,7 @@ export default {
         }
       ],
       dataItemsProductos: [],
+      dataItemsMenus: [],
       slide: 0,
       sliding: null,
       i: 0,
@@ -162,6 +169,13 @@ export default {
           return el.tipo == tipo;
         });
       }
+     /* if (this.selected == "AllMenus") {
+        this.dataItemsMenus = this.allMenus;
+      } else {
+        this.dataItemsMenus = this.allMenus.filter(function (el) {
+          return el.personalizable == personalizable;
+        });
+      }*/
     },
     onSlideStart(slide) {
       this.sliding = true
@@ -229,34 +243,102 @@ export default {
 
       this.$axios.$get('http://localhost:8080/restaurantes/get').then(res => {
         this.allRestaurants = res;
-        this.$axios.$get('http://localhost:8080/restaurantes/getAllProducts').then(res2 => {
-          this.allProductsRestaurants = res2;
-          this.$axios.$get('http://localhost:8080/productos/get').then(res3 => {
-            //this.allProducts = res;
-            res3.forEach(element => {
-              this.allProducts.push({
-                id: element.idProducto,
-                src: 'data:image/jpeg;base64,' + element.picByte,
-                alt: element.nombre,
-                price: element.precio,
-                tipo: element.tipo
-              });
-            });
-            this.dataItemsProductos = this.allProducts;
+        this.$axios.$get('http://localhost:8080/restaurantes/getAllMenus').then(res4 => {
+          this.allMenus = res4;
+          this.$axios.$get('http://localhost:8080/menus/get').then(res5 => {
+                  //this.allProducts = res;
+              
+              console.log(res5);
+              res5.forEach(element => {
+                
+                this.$axios.$get('http://localhost:8080/menus/getNameMenuRestaurant?id='+ element.restaurantNit).then(res7 => {
+                console.log(this.allMenus)
+                if(element.personalizable==false){
+                  element.personalizable='No'
+                }else{
+                  element.personalizable='Si'
+                };
+                this.allMenus.push({
+                  id: element.idMenu,
+                  src: 'data:image/jpeg;base64,' + element.picByte,
+                  //  src: src.style.width="1px",
+                  alt: element.nombre,
+                  price: element.precio,
+                  tipo: element.personalizable,   
+                  nombre_restaurante: res7.nombre          
+                  });
+                console.log(this.allMenus);
+                this.allMenus.shift();
+                  }).catch(err => {
+                      console.log(err);
+                      alert('Sesión expirada, vuelva a iniciar sesión');
+                      localStorage.clear();
+                      //this.$router.push('/log_in');
+                      window.location.href = 'http://localhost:3000/log_in';
+                  })
+                console.log('entre  x veces')
+                });
+         
+          console.log(this.allMenus)
+          this.dataItemsMenus = this.allMenus;
+          
+            this.$axios.$get('http://localhost:8080/restaurantes/getAllProducts').then(res2 => {
+              this.allProductsRestaurants = res2;
+              console.log(res2)
+              this.$axios.$get('http://localhost:8080/productos/get').then(res3 => {
+                //this.allProducts = res;
+                res3.forEach(element => {
+                  this.$axios.$get('http://localhost:8080/productos/getNameProductRestaurant?id='+ element.idProducto).then(res6 => {
+                  this.allProducts.push({
+                    id: element.idProducto,
+                    src: 'data:image/jpeg;base64,' + element.picByte,
+                  //  src: src.style.width="1px",
+                    alt: element.nombre,
+                    price: element.precio,
+                    tipo: element.tipo,
+                    nombre_restaurante: res6.nombre
+                  });
+                  }).catch(err => {
+                    console.log(err);
+                    alert('Sesión expirada, vuelva a iniciar sesión');
+                    localStorage.clear();
+                    //this.$router.push('/log_in');
+                    window.location.href = 'http://localhost:3000/log_in';
+                  })
+                  
+                  
+                });
+                this.dataItemsProductos = this.allProducts;
+                
+                  
+              }).catch(err => {
+                console.log(err);
+                alert('Sesión expirada, vuelva a iniciar sesión');
+                localStorage.clear();
+                //this.$router.push('/log_in');
+                window.location.href = 'http://localhost:3000/log_in';
+              })
+            }).catch(err => {
+              console.log(err);
+              alert('Sesión expirada, vuelva a iniciar sesión');
+              localStorage.clear();
+              //this.$router.push('/log_in');
+              window.location.href = 'http://localhost:3000/log_in';
+            })
           }).catch(err => {
-            console.log(err);
-            alert('Sesión expirada, vuelva a iniciar sesión');
-            localStorage.clear();
-            //this.$router.push('/log_in');
-            window.location.href = 'http://localhost:3000/log_in';
-          })
+          console.log(err);
+          alert('Sesión expirada, vuelva a iniciar sesión');
+          localStorage.clear();
+          //this.$router.push('/log_in');
+          window.location.href = 'http://localhost:3000/log_in';
+        });
         }).catch(err => {
           console.log(err);
           alert('Sesión expirada, vuelva a iniciar sesión');
           localStorage.clear();
           //this.$router.push('/log_in');
           window.location.href = 'http://localhost:3000/log_in';
-        })
+        });
       }).catch(err => {
         console.log(err);
         alert('Sesión expirada, vuelva a iniciar sesión');

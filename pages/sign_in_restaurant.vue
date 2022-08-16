@@ -69,13 +69,25 @@ export default {
       show: true
     }
   },
+  mounted(){
+    let recaptchaScript = document.createElement('script')
+    recaptchaScript.setAttribute('src', '//cdn.jsdelivr.net/npm/sweetalert2@11')
+    document.head.appendChild(recaptchaScript)
+  },
   methods: {
     onSubmit(event) {
       event.preventDefault()
       alert(JSON.stringify(this.form))
       const restaurante = new Restaurante(this.form.nit, this.form.name, this.form.telefono, this.form.especialidad, this.form.email,this.form.password);
       this.$axios.$post("http://localhost:8080/auth/newrestaurant", restaurante)
-        .then(response => console.log(response))
+        .then(response => {
+          console.log(response)
+          Swal.fire({
+            icon: 'success',
+            title: 'Exito',
+            text: 'Restaurante registrado',
+           })
+        })
         .catch(response => console.log(response),error => {
           this.errorMessage = error.message;
           console.error("There was an error!", error);
