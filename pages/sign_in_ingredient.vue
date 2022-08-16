@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-form @submit="onSubmit" @reset="onReset" v-if="show">
+    <b-form @submit="onSubmit" @reset="onReset" v-if="show" class="formulario">
 
       <b-form-group id="input-group-1" label="Nombre:" label-for="input-1">
         <b-form-input id="input-1" v-model="form.nombre" placeholder="Enter Name" required>

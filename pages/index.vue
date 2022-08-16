@@ -32,7 +32,7 @@
         <div id="image" :style="imgStyle"></div>
       </div>
     </div>
-    <b-row class="my-1" style="display: flex;justify-content: center">
+    <b-row class="my-1" style="display: flex;justify-content: center; width: 100%;">
       <div>
         <label for="filter">Filtrar por:</label>
       </div>
@@ -43,10 +43,10 @@
 
 
     <legend>Productos:</legend>
-    <listado-items :dataItems="dataItemsProductos" ></listado-items>
+    <listado-items :dataItems="dataItemsProductos" :userLoged="userLoged" id="productos"></listado-items>
 
     <legend>Menus:</legend>
-    <listado-items :dataItems="dataItemsMenus" ></listado-items>
+    <listado-items :dataItems="dataItemsMenus" :userLoged="userLoged" id="menus"></listado-items>
 
     <!-- <div style="padding: 10px">
       <h1>Nuxt.js + Spring Boot</h1>
@@ -66,15 +66,16 @@ import ListadoItems from '../components/ListadoItems.vue';
 
 export default {
 
-  beforeMount() {
+  /*beforeMount() {
     window.addEventListener("load", this.onLoad);
-  },
+  },*/
   mounted() {
-
+    this.onLoad();
   },
   data() {
     return {
       selected: 'Todo',
+      userLoged: false,
       allProducts: [],
       allRestaurants: [],
       allProductsRestaurants: [],
@@ -236,10 +237,9 @@ export default {
       if (localStorage.getItem('token') != null) {
         this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
       }
-      /*if(localStorage.getItem('authorities')=='Usuario'){
-        alert("Debe iniciar sesión!");
-        this.$router.push('/log_in')
-      }*/
+      if(localStorage.getItem('authorities')=='Usuario'){
+        this.userLoged = true;
+      }
 
       this.$axios.$get('http://localhost:8080/restaurantes/get').then(res => {
         this.allRestaurants = res;
@@ -287,6 +287,7 @@ export default {
               console.log(res2)
               this.$axios.$get('http://localhost:8080/productos/get').then(res3 => {
                 //this.allProducts = res;
+               
                 res3.forEach(element => {
                   this.$axios.$get('http://localhost:8080/productos/getNameProductRestaurant?id='+ element.idProducto).then(res6 => {
                   this.allProducts.push({

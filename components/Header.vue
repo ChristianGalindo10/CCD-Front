@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="    position: sticky;top: 0;z-index: 99;">
         <b-navbar toggleable="lg" type="dark" variant="danger" sticky:true>
 
             <b-navbar-brand>
@@ -12,24 +12,34 @@
 
             <b-collapse id="nav-collapse" is-nav>
                 <b-navbar-nav>
-                    <li class="nav-item">
-                        <NuxtLink to="/Recomendado" class="nav-link">
+                    <li class="nav-item" v-if="userLoged">
+                        <NuxtLink to="#carouselContainer" class="nav-link">
                             Recomendado |
                         </NuxtLink>
                     </li>
-                    <li class="nav-item">
-                        <NuxtLink to="/Especialidades" class="nav-link">
-                            Especialidades |
-                        </NuxtLink>
-                    </li>
-                    <li class="nav-item">
-                        <NuxtLink to="/Restaurantes" class="nav-link">
-                            Restaurantes |
-                        </NuxtLink>
-                    </li>
-                    <li class="nav-item">
-                        <NuxtLink to="/Productos" class="nav-link">
+                    <li class="nav-item" v-if="userLoged">
+                        <NuxtLink to="#productos" class="nav-link">
                             Productos |
+                        </NuxtLink>
+                    </li>
+                    <li class="nav-item" v-if="userLoged">
+                        <NuxtLink to="#menus" class="nav-link">
+                            Menús
+                        </NuxtLink>
+                    </li>
+                    <li class="nav-item" v-if="restaurantLoged">
+                        <NuxtLink to="/record_menu" class="nav-link">
+                            Añadir Menú |
+                        </NuxtLink>
+                    </li>
+                    <li class="nav-item" v-if="restaurantLoged">
+                        <NuxtLink to="/sign_in_product" class="nav-link">
+                            Añadir Producto |
+                        </NuxtLink>
+                    </li>
+                    <li class="nav-item" v-if="restaurantLoged">
+                        <NuxtLink to="/sign_in_ingredient" class="nav-link">
+                            Añadir Ingrediente
                         </NuxtLink>
                     </li>
                 </b-navbar-nav>
@@ -45,9 +55,39 @@
                         <NuxtLink v-if="!logIn" class="nav-link" to="/Log_in">
                             Ingresar
                         </NuxtLink>
-                        <NuxtLink v-if="logIn" class="nav-link" to="/User">
+                        <b-nav-item-dropdown v-if="userLoged">
+                            <!-- Using 'button-content' slot -->
+                            <template #button-content>
+                                {{ name }}
+                            </template>
+                            <b-dropdown-item href="#">
+                                <NuxtLink to="/cart" class="dp-item-custom">Carrito de compras</NuxtLink>
+                            </b-dropdown-item>
+                            <b-dropdown-item href="#">
+                                <NuxtLink to="/pedidos" class="dp-item-custom">Pedidos</NuxtLink>
+                            </b-dropdown-item>
+                        </b-nav-item-dropdown>
+                        <b-nav-item-dropdown v-if="restaurantLoged">
+                            <!-- Using 'button-content' slot -->
+                            <template #button-content>
+                                {{ name }}
+                            </template>
+                            <b-dropdown-item href="#">
+                                <NuxtLink to="/ingredientes" class="dp-item-custom">Ingredientes</NuxtLink>
+                            </b-dropdown-item>
+                            <b-dropdown-item href="#">
+                                <NuxtLink to="/productos" class="dp-item-custom">Productos</NuxtLink>
+                            </b-dropdown-item>
+                            <b-dropdown-item href="#">
+                                <NuxtLink to="/menus" class="dp-item-custom">Menús</NuxtLink>
+                            </b-dropdown-item>
+                            <b-dropdown-item href="#">
+                                <NuxtLink to="/r_pedidos" class="dp-item-custom">Pedidos</NuxtLink>
+                            </b-dropdown-item>
+                        </b-nav-item-dropdown>
+                        <!-- <NuxtLink v-if="logIn" class="nav-link" to="/User">
                             {{ name }}
-                        </NuxtLink>
+                        </NuxtLink> -->
                         <a href="#" v-if="logIn" class="nav-link" @click="removeToken">Cerrar Sesión</a>
                         <!-- <button >Cerrar Sesión</button> -->
                     </b-nav-form>
@@ -73,34 +113,61 @@
     </div>
 </template>
 
+<style scoped>
+.dp-item-custom {
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+    text-decoration: none;
+}
+</style>
+
 <script>
 export default {
     name: 'Header',
-    beforeMount() {
-        window.addEventListener("load", this.onLoad);
+    /*beforeMount() {
+        //window.addEventListener("load", this.onLoad);
+        this.onLoad();
+        //window.addEventListener("beforeunload", this.onUnload);
+    },*/
+    mounted() {
+        //window.addEventListener("load", this.onLoad);
+        this.onLoad();
         //window.addEventListener("beforeunload", this.onUnload);
     },
-    mounted() {
+    /*mounted() {
 
-    },
+    },*/
     data() {
         return {
             logIn: false,
-            name: ''
+            name: '',
+            userLoged: false,
+            restaurantLoged: false
         }
     },
     methods: {
         removeToken() {
-            localStorage.clear()
-            this.logIn = false
-            this.$router.push('/')
+            localStorage.clear();
+            this.logIn = false;
+            //this.$router.push('/')
+            window.location.href = 'http://localhost:3000/';
 
         },
         onLoad() {
             if (localStorage.getItem('token') != null) {
                 this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
-                this.name = localStorage.getItem('userName')
-                this.logIn = true
+                this.name = localStorage.getItem('userName');
+                this.logIn = true;
+                if (localStorage.getItem('authorities') == 'Usuario') {
+                    this.userLoged = true;
+                }else if(localStorage.getItem('authorities') == 'restaurante'){
+                    this.restaurantLoged = true;
+                }
             }
         }
     }

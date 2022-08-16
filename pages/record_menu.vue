@@ -88,8 +88,13 @@ import Menu from '../model/Menu';
 export default {
     name: "SelectImage",
     beforeMount() {
-        window.addEventListener("load", this.onLoad);
-    },
+        //window.addEventListener("load", this.onLoad);
+        this.onLoad();
+    },/*
+    async created() {
+        //window.addEventListener("load", this.onLoad);
+        this.onLoad();
+    },*/
     mounted() {
         let recaptchaScript = document.createElement('script')
         recaptchaScript.setAttribute('src', '//cdn.jsdelivr.net/npm/sweetalert2@11')

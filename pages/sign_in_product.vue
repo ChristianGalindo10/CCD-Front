@@ -116,7 +116,8 @@ export default {
     BIconXCircleFill
   },
   beforeMount() {
-    window.addEventListener("load", this.onLoad);
+    //window.addEventListener("load", this.onLoad);
+    this.onLoad();
   },
   mounted() {
     let recaptchaScript = document.createElement('script')
