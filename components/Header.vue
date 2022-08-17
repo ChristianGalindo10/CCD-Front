@@ -82,7 +82,7 @@
                                 <NuxtLink to="/menus" class="dp-item-custom">Menús</NuxtLink>
                             </b-dropdown-item>
                             <b-dropdown-item href="#">
-                                <NuxtLink to="/r_pedidos" class="dp-item-custom">Pedidos</NuxtLink>
+                                <NuxtLink to="/pedidosR" class="dp-item-custom">Pedidos</NuxtLink>
                             </b-dropdown-item>
                         </b-nav-item-dropdown>
                         <!-- <NuxtLink v-if="logIn" class="nav-link" to="/User">

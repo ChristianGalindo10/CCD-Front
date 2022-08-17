@@ -142,11 +142,11 @@ export default {
         onLoad() {
             if (localStorage.getItem('token') != null) {
                 this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
-                if (localStorage.getItem('authorities') != 'Usuario') {
-                    alert("Debe iniciar sesión como Usuario!");
+                if (localStorage.getItem('authorities') != 'restaurante') {
+                    alert("Debe iniciar sesión como Restaurante!");
                     this.$router.push('/log_in')
                 }
-                let url = 'http://localhost:8080/pedidos/getPedidos?id=' + localStorage.getItem('id');
+                let url = 'http://localhost:8080/pedidos/getPedidosR?nit=' + localStorage.getItem('id');
                 this.$axios.$get(url).then(res => {
                     res.forEach(element => {
                         element.productos = [];
