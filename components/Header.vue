@@ -52,6 +52,24 @@
                         <!-- <NuxtLink class="btn my-2 my-sm-0 btn-secondary btn-sm" to="/sign_in">
                             Sign In
                         </NuxtLink> -->
+                        <!-- <b-nav-item-dropdown v-if="!logIn & !restaurantLoged">
+                            <template #button-content>
+                                    Registrarse
+                            </template>
+                                <b-dropdown-item href="#">
+                                    <NuxtLink to="/Sign_in" class="dp-item-custom">Registrar Usuario</NuxtLink>
+                                </b-dropdown-item>
+                                <b-dropdown-item href="#">
+                                    <NuxtLink to="/Sign_in_restaurant" class="dp-item-custom">Registrar Restaurante</NuxtLink>
+                                </b-dropdown-item>
+                        </b-nav-item-dropdown>-->
+                        <NuxtLink v-if="!logIn & !restaurantLoged" class="nav-link" to="/Sign_in">
+                            Registrarse
+                        </NuxtLink>
+                        <NuxtLink v-if="adminLoged" class="nav-link" to="/Sign_in_restaurant">
+                            Registrar restaurante
+                        </NuxtLink>
+
                         <NuxtLink v-if="!logIn" class="nav-link" to="/Log_in">
                             Ingresar
                         </NuxtLink>
@@ -147,6 +165,7 @@ export default {
             logIn: false,
             name: '',
             userLoged: false,
+            adminLoged: false,
             restaurantLoged: false
         }
     },
@@ -165,6 +184,8 @@ export default {
                 this.logIn = true;
                 if (localStorage.getItem('authorities') == 'Usuario') {
                     this.userLoged = true;
+                }else if(localStorage.getItem('authorities') == 'Administrador'){
+                    this.adminLoged = true;
                 }else if(localStorage.getItem('authorities') == 'restaurante'){
                     this.restaurantLoged = true;
                 }

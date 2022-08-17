@@ -6,9 +6,7 @@
         <div class="col-5">
           <div>
             <h1 class="display-4">Consorcio de Comidas a Domicilio</h1>
-            <p class="lead">Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus error unde, nulla
-              incidunt facilis non consequuntur eligendi accusamus nemo architecto molestias dolores odio perspiciatis
-              velit sapiente similique sit asperiores rerum.</p>
+            <p class="lead">Pide domicilio tus comidas y productos de preferencia. Tus restaurantes favoritos están en CCD, donde te garantizamos el mejor servicio en todo el país.</p>
           </div>
 
         </div>
