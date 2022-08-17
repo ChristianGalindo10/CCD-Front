@@ -44,11 +44,13 @@ export default {
           localStorage.setItem('token', response.token);
           localStorage.setItem('userName', response.name);
           localStorage.setItem('authorities', response.authorities[0].authority);
+          localStorage.setItem('id', response.id);
           //this.$router.push('/')
           window.location.href = 'http://localhost:3000/';
         }
         )
         .catch(error => {
+          alert("Datos erróneos");
           this.errorMessage = error.message;
           console.error("There was an error!", error);
         });

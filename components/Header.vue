@@ -1,5 +1,5 @@
 <template>
-    <div style="    position: sticky;top: 0;z-index: 99;">
+    <div style="    position: sticky;top: 0;z-index: 999;">
         <b-navbar toggleable="lg" type="dark" variant="danger" sticky:true>
 
             <b-navbar-brand>

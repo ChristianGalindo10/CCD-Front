@@ -43,10 +43,65 @@
 
 
     <legend>Productos:</legend>
-    <listado-items :dataItems="dataItemsProductos" :userLoged="userLoged" id="productos"></listado-items>
+    <listado-items :dataItems="dataItemsProductos" :userLoged="userLoged" id="productos" @selectitem="alertar">
+    </listado-items>
 
     <legend>Menus:</legend>
-    <listado-items :dataItems="dataItemsMenus" :userLoged="userLoged" id="menus"></listado-items>
+    <listado-items :dataItems="dataItemsMenus" :userLoged="userLoged" id="menus" @selectitem="alertar"></listado-items>
+
+    <b-modal id="modal-prevent-closing" ref="modal" :title="selected.alt" @show="resetModal" @hidden="resetModal"
+      @ok="handleOk" :size="'lg'">
+      <form ref="form" @submit.stop.prevent="handleSubmit">
+        <!-- <b-form-group label="Name" label-for="name-input" invalid-feedback="Name is required" :state="nameState">
+          <b-form-input id="name-input" v-model="name" :state="nameState" required></b-form-input>
+        </b-form-group> -->
+        <b-card no-body class="overflow-hidden">
+          <b-row no-gutters>
+            <b-col md="6">
+              <b-card-img :src="selected.src" alt="Image" class="rounded-0"></b-card-img>
+            </b-col>
+            <b-col md="6">
+              <b-card-body v-if="selected.type_id == 'producto'" title="Ingredientes:">
+                <b-card-text>
+                  <b-list-group style="max-width: 400px; margin: 0 auto;">
+                    <b-list-group-item v-for="(dataItem, index) in selectedIngredients" :key="index"
+                      class="d-flex justify-content-between align-items-center">
+                      {{ dataItem.nombre }}
+                      <b-badge variant="primary" pill>{{ dataItem.cantidad }}{{ dataItem.unidadMedida }}</b-badge>
+                    </b-list-group-item>
+                  </b-list-group>
+                  <label class="sr-only" for="inline-form-input-cantidad">Name</label>
+                  <b-form-group label="Cantidad: " label-for="quantity">
+                    <b-form-input class="mb-2 mr-sm-2 mb-sm-0" v-model="quantity" type="number" min="1" required>
+                    </b-form-input>
+                  </b-form-group>
+                  <span style="position: absolute;bottom: 0;right: 20px;color: #28a745;">Precio:
+                    ${{ formatPrice(precioCalculado) }}</span>
+                </b-card-text>
+              </b-card-body>
+              <b-card-body v-else-if="selected.type_id == 'menu'" title="Productos:">
+                <b-card-text>
+                  <b-list-group style="max-width: 400px; margin: 0 auto;">
+                    <b-list-group-item v-for="(dataItem, index) in selectedProducts" :key="index"
+                      class="d-flex justify-content-between align-items-center">
+                      <b-badge variant="primary" pill>{{ dataItem.tipo }}</b-badge>
+                      {{ dataItem.nombre }}
+                    </b-list-group-item>
+                  </b-list-group>
+                  <label class="sr-only" for="inline-form-input-cantidad">Name</label>
+                  <b-form-group label="Cantidad: " label-for="quantity">
+                    <b-form-input class="mb-2 mr-sm-2 mb-sm-0" v-model="quantity" type="number" min="0" required>
+                    </b-form-input>
+                  </b-form-group>
+                  <span style="position: absolute;bottom: 0;right: 20px;color: #28a745;">Precio:
+                    ${{ formatPrice(precioCalculado) }}</span>
+                </b-card-text>
+              </b-card-body>
+            </b-col>
+          </b-row>
+        </b-card>
+      </form>
+    </b-modal>
 
     <!-- <div style="padding: 10px">
       <h1>Nuxt.js + Spring Boot</h1>
@@ -74,6 +129,13 @@ export default {
   },
   data() {
     return {
+      selected: {},
+      quantity: 1,
+      submittedNames: [],
+      originalProducts: [],
+      originalMenus: [],
+      selectedIngredients: [],
+      selectedProducts: [],
       selected: 'Todo',
       userLoged: false,
       allProducts: [],
@@ -157,9 +219,127 @@ export default {
       return {
         backgroundImage: this.backgroundImage
       }
+    },
+    precioCalculado() {
+      let price = 0;
+      price = this.quantity * this.selected.real_price;
+      return price;
     }
   },
   methods: {
+    alertar(Object) {
+      console.log(Object);
+      this.selected = Object;
+      if (Object.type_id == "producto") {
+        this.$axios.$get('http://localhost:8080/ingredientes/getIngredients?pid=' + Object.id).then(
+          res9 => {
+            console.log(res9);
+            this.selectedIngredients = res9;
+          }
+        ).catch(err => {
+          console.log(err);
+          alert('Sesión expirada, vuelva a iniciar sesión');
+          localStorage.clear();
+          //this.$router.push('/log_in');
+          window.location.href = 'http://localhost:3000/log_in';
+        });
+      } else if (Object.type_id == "menu") {
+        this.$axios.$get('http://localhost:8080/productos/getMenuProducts?idm=' + Object.id).then(
+          res9 => {
+            console.log(res9);
+            this.selectedProducts = res9;
+          }
+        ).catch(err => {
+          console.log(err);
+          alert('Sesión expirada, vuelva a iniciar sesión');
+          localStorage.clear();
+          //this.$router.push('/log_in');
+          window.location.href = 'http://localhost:3000/log_in';
+        });
+      }
+    },
+    checkFormValidity() {
+      const valid = this.$refs.form.checkValidity()
+      this.nameState = valid
+      return valid
+    },
+    resetModal() {
+      this.quantity = 1
+    },
+    handleOk(bvModalEvent) {
+      // Prevent modal from closing
+      bvModalEvent.preventDefault()
+      // Trigger submit handler
+      this.handleSubmit()
+    },
+    handleSubmit() {
+      // Exit when the form isn't valid
+      if (!this.checkFormValidity()) {
+        return
+      }
+
+      // Actions
+      let cartData = [];
+      //retrieve cart data from localstorage
+      let data = sessionStorage.getItem('cart');
+      //parse it to json
+      if (data !== null) {
+        cartData = JSON.parse(data);
+      }
+      let item;
+      if (this.selected.type_id == "producto") {
+        item = this.originalProducts.filter(product => this.selected.id == product.idProducto)[0];
+        if (cartData.some(d => d.idProducto === item.idProducto)) {
+          this.$bvToast.toast('Ya está en el carrito', {
+            title: 'Fallo',
+            variant: 'danger',
+            solid: true
+          });
+          return
+        }
+        item.cantidad = this.quantity;
+        item.componentes = this.selectedIngredients;
+        let restaurant = this.allProducts.filter(product => this.selected.id == product.id)[0];
+        item.restaurant = restaurant.restaurant;
+
+
+      } else if (this.selected.type_id == "menu") {
+        item = this.originalMenus.filter(menu => this.selected.id == menu.idMenu)[0];
+        if (cartData.some(d => d.idMenu === item.idMenu)) {
+          this.$bvToast.toast('Ya está en el carrito', {
+            title: 'Fallo',
+            variant: 'danger',
+            solid: true
+          });
+          return
+        }
+
+        let restaurant = this.allRestaurants.filter(restaurant => item.restaurantNit == restaurant.nit)[0];
+        item.cantidad = this.quantity;
+        item.componentes = this.selectedProducts;
+        item.restaurant = restaurant;
+        console.log("Item ", item);
+      }
+      item.type_id = this.selected.type_id;
+      // add the selected product to cart data
+      cartData.push(item);
+      sessionStorage.setItem('cart', JSON.stringify(cartData));
+      data = sessionStorage.getItem('cart');
+      //updated the cart
+      cartData = JSON.parse(data);
+      window.cartProducts = cartData;
+      this.quantity = 0;
+      // Hide the modal manually
+      this.$nextTick(() => {
+        this.$bvModal.hide('modal-prevent-closing')
+      });
+      this.$bvToast.toast('Agregado al carrito', {
+        title: 'Éxito',
+        variant: 'success',
+        solid: true
+      });
+
+    },
     onChange() {
       console.log(this.selected);
       var tipo = this.selected;
@@ -170,13 +350,13 @@ export default {
           return el.tipo == tipo;
         });
       }
-     /* if (this.selected == "AllMenus") {
-        this.dataItemsMenus = this.allMenus;
-      } else {
-        this.dataItemsMenus = this.allMenus.filter(function (el) {
-          return el.personalizable == personalizable;
-        });
-      }*/
+      /* if (this.selected == "AllMenus") {
+         this.dataItemsMenus = this.allMenus;
+       } else {
+         this.dataItemsMenus = this.allMenus.filter(function (el) {
+           return el.personalizable == personalizable;
+         });
+       }*/
     },
     onSlideStart(slide) {
       this.sliding = true
@@ -237,7 +417,7 @@ export default {
       if (localStorage.getItem('token') != null) {
         this.$axios.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage.getItem('token');
       }
-      if(localStorage.getItem('authorities')=='Usuario'){
+      if (localStorage.getItem('authorities') == 'Usuario') {
         this.userLoged = true;
       }
 
@@ -245,60 +425,67 @@ export default {
         this.allRestaurants = res;
         this.$axios.$get('http://localhost:8080/restaurantes/getAllMenus').then(res4 => {
           this.allMenus = res4;
+
+          console.log("Original menus", this.originalMenus);
           this.$axios.$get('http://localhost:8080/menus/get').then(res5 => {
-                  //this.allProducts = res;
-              
-              console.log(res5);
-              res5.forEach(element => {
-                
-                this.$axios.$get('http://localhost:8080/menus/getNameMenuRestaurant?id='+ element.restaurantNit).then(res7 => {
+            this.originalMenus = res5;
+
+            console.log(res5);
+            res5.forEach(element => {
+
+              this.$axios.$get('http://localhost:8080/menus/getNameMenuRestaurant?id=' + element.restaurantNit).then(res7 => {
                 console.log(this.allMenus)
-                if(element.personalizable==false){
-                  element.personalizable='No'
-                }else{
-                  element.personalizable='Si'
+                if (element.personalizable == false) {
+                  element.personalizable = 'No'
+                } else {
+                  element.personalizable = 'Si'
                 };
                 this.allMenus.push({
                   id: element.idMenu,
                   src: 'data:image/jpeg;base64,' + element.picByte,
                   //  src: src.style.width="1px",
                   alt: element.nombre,
-                  price: element.precio,
-                  tipo: element.personalizable,   
-                  nombre_restaurante: res7.nombre          
-                  });
+                  real_price: element.precio,
+                  price: this.formatPrice(element.precio),
+                  tipo: element.personalizable,
+                  nombre_restaurante: res7.nombre,
+                  type_id: 'menu',
+                  restaurant: element.restaurantNit
+                });
                 console.log(this.allMenus);
                 this.allMenus.shift();
-                  }).catch(err => {
-                      console.log(err);
-                      alert('Sesión expirada, vuelva a iniciar sesión');
-                      localStorage.clear();
-                      //this.$router.push('/log_in');
-                      window.location.href = 'http://localhost:3000/log_in';
-                  })
-                console.log('entre  x veces')
-                });
-         
-          console.log(this.allMenus)
-          this.dataItemsMenus = this.allMenus;
-          
+              }).catch(err => {
+                console.log(err);
+                alert('Sesión expirada, vuelva a iniciar sesión');
+                localStorage.clear();
+                //this.$router.push('/log_in');
+                window.location.href = 'http://localhost:3000/log_in';
+              })
+              console.log('entre  x veces')
+            });
+
+            console.log(this.allMenus)
+            this.dataItemsMenus = this.allMenus;
+
             this.$axios.$get('http://localhost:8080/restaurantes/getAllProducts').then(res2 => {
               this.allProductsRestaurants = res2;
               console.log(res2)
               this.$axios.$get('http://localhost:8080/productos/get').then(res3 => {
-                //this.allProducts = res;
-               
+                this.originalProducts = res3;
+
                 res3.forEach(element => {
-                  this.$axios.$get('http://localhost:8080/productos/getNameProductRestaurant?id='+ element.idProducto).then(res6 => {
-                  this.allProducts.push({
-                    id: element.idProducto,
-                    src: 'data:image/jpeg;base64,' + element.picByte,
-                  //  src: src.style.width="1px",
-                    alt: element.nombre,
-                    price: element.precio,
-                    tipo: element.tipo,
-                    nombre_restaurante: res6.nombre
-                  });
+                  this.$axios.$get('http://localhost:8080/productos/getNameProductRestaurant?id=' + element.idProducto).then(res6 => {
+                    this.allProducts.push({
+                      id: element.idProducto,
+                      src: 'data:image/jpeg;base64,' + element.picByte,
+                      alt: element.nombre,
+                      real_price: element.precio,
+                      price: this.formatPrice(element.precio),
+                      tipo: element.tipo,
+                      nombre_restaurante: res6.nombre,
+                      type_id: 'producto',
+                      restaurant: res6
+                    });
                   }).catch(err => {
                     console.log(err);
                     alert('Sesión expirada, vuelva a iniciar sesión');
@@ -306,12 +493,12 @@ export default {
                     //this.$router.push('/log_in');
                     window.location.href = 'http://localhost:3000/log_in';
                   })
-                  
-                  
+
+
                 });
                 this.dataItemsProductos = this.allProducts;
-                
-                  
+
+
               }).catch(err => {
                 console.log(err);
                 alert('Sesión expirada, vuelva a iniciar sesión');
@@ -327,12 +514,12 @@ export default {
               window.location.href = 'http://localhost:3000/log_in';
             })
           }).catch(err => {
-          console.log(err);
-          alert('Sesión expirada, vuelva a iniciar sesión');
-          localStorage.clear();
-          //this.$router.push('/log_in');
-          window.location.href = 'http://localhost:3000/log_in';
-        });
+            console.log(err);
+            alert('Sesión expirada, vuelva a iniciar sesión');
+            localStorage.clear();
+            //this.$router.push('/log_in');
+            window.location.href = 'http://localhost:3000/log_in';
+          });
         }).catch(err => {
           console.log(err);
           alert('Sesión expirada, vuelva a iniciar sesión');
@@ -347,6 +534,10 @@ export default {
         //this.$router.push('/log_in');
         window.location.href = 'http://localhost:3000/log_in';
       });
+    },
+    formatPrice(value) {
+      let val = (value / 1).toFixed(2).replace('.', ',')
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
     }
   },
   components: {

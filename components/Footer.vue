@@ -1,6 +1,6 @@
 <template>
     <!-- Footer -->
-    <footer >
+    <footer id="pFooter">
         <div class="container py-5">
             <div class="row py-4">
                 <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
@@ -69,7 +69,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 footer{
     background-color: #d1e70c;
 }
